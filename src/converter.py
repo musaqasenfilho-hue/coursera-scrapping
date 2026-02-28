@@ -37,6 +37,7 @@ def html_to_sections(html: str, lesson_title: str) -> list[Section]:
         flush()
 
     if not sections:
-        sections.append(Section(heading=lesson_title, content=md(html).strip()))
+        # Fallback: HTML had only headings with no interspersed content
+        sections.append(Section(heading=lesson_title, content=md(html, heading_style="ATX").strip()))
 
     return sections
