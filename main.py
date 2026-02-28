@@ -27,7 +27,7 @@ async def run(course_url: str):
         sys.exit(1)
 
     logger.info("Logging into Coursera...")
-    playwright, browser, context = await login(email, password, headless=False)
+    playwright, browser, context = await login(email, password)
 
     try:
         logger.info(f"Fetching course structure from {course_url}")

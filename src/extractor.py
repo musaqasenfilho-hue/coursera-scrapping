@@ -14,15 +14,32 @@ READING_API_PATTERNS = [
 
 
 def extract_html_from_response(data: dict) -> Optional[str]:
-    """Parse Coursera API JSON and extract HTML content field."""
+    """Parse Coursera API JSON and extract HTML content field.
+
+    Supports the linked/openCourseAssets.v1 structure used by onDemandSupplements.v1.
+    """
+    # Primary path: linked["openCourseAssets.v1"][].definition.renderableHtmlWithMetadata.renderableHtml
     try:
-        for elem in data.get("elements", []):
-            defn = elem.get("definition", {}).get("value", {})
-            html = defn.get("html")
+        for asset in data.get("linked", {}).get("openCourseAssets.v1", []):
+            html = (
+                asset.get("definition", {})
+                .get("renderableHtmlWithMetadata", {})
+                .get("renderableHtml")
+            )
             if html:
                 return html
     except (AttributeError, TypeError):
         pass
+
+    # Fallback: elements[].definition.value.html (legacy structure)
+    try:
+        for elem in data.get("elements", []):
+            html = elem.get("definition", {}).get("value", {}).get("html")
+            if html:
+                return html
+    except (AttributeError, TypeError):
+        pass
+
     return None
 
 

@@ -40,3 +40,25 @@ def test_returns_none_when_html_field_missing():
     }
     result = extract_html_from_response(fake_json)
     assert result is None
+
+
+def test_extracts_html_from_linked_assets():
+    """Matches the real onDemandSupplements.v1 response structure."""
+    fake_json = {
+        "elements": [{"itemId": "CIPwz", "id": "course~CIPwz"}],
+        "linked": {
+            "openCourseAssets.v1": [
+                {
+                    "itemId": "CIPwz",
+                    "typeName": "cml",
+                    "definition": {
+                        "renderableHtmlWithMetadata": {
+                            "renderableHtml": "<p>Reading content here</p>"
+                        }
+                    },
+                }
+            ]
+        },
+    }
+    result = extract_html_from_response(fake_json)
+    assert result == "<p>Reading content here</p>"
