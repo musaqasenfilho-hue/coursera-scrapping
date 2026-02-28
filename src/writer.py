@@ -7,7 +7,8 @@ from src.converter import Section
 
 def sanitize_filename(name: str) -> str:
     name = re.sub(r"[^\w\s-]", " ", name).strip()
-    return re.sub(r"\s+", "_", name)
+    result = re.sub(r"\s+", "_", name)[:200]
+    return result or "unnamed"
 
 
 def write_csv(
