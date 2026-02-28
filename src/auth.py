@@ -28,5 +28,6 @@ async def login(email: str, password: str, headless: bool = False) -> tuple:
     await page.wait_for_url(
         lambda url: "accounts.coursera.org" not in url, timeout=30_000
     )
+    await page.close()
 
     return playwright, browser, context
