@@ -27,6 +27,8 @@ def parse_readings_from_html(html: str, base_url: str) -> list[ReadingLesson]:
                 continue
             title = link.get_text(strip=True)
             href = link.get("href", "")
+            if not href:
+                continue
             url = href if href.startswith("http") else base_url + href
             lessons.append(ReadingLesson(module=module_name, lesson_title=title, url=url))
 
@@ -38,10 +40,18 @@ async def get_course_readings(
 ) -> tuple[list[ReadingLesson], str]:
     """Navigate to course home and return (readings, course_slug)."""
     page = await context.new_page()
-    await page.goto(course_url, wait_until="networkidle", timeout=30_000)
-    html = await page.content()
-    await page.close()
+    try:
+        await page.goto(course_url, wait_until="networkidle", timeout=30_000)
+        html = await page.content()
+    finally:
+        await page.close()
 
-    slug = course_url.rstrip("/").split("/learn/")[-1].split("/")[0]
+    # Extract slug from /learn/<slug>/... pattern, fallback to last URL segment
+    parts = course_url.rstrip("/").split("/learn/")
+    if len(parts) > 1:
+        slug = parts[-1].split("/")[0]
+    else:
+        slug = course_url.rstrip("/").split("/")[-1]
+
     readings = parse_readings_from_html(html, base_url="https://www.coursera.org")
     return readings, slug
