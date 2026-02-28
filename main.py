@@ -3,8 +3,6 @@ import asyncio
 import logging
 import os
 import sys
-import time
-from pathlib import Path
 
 from dotenv import load_dotenv
 
@@ -22,8 +20,11 @@ DELAY_BETWEEN_LESSONS = float(os.getenv("SCRAPE_DELAY", "2"))
 
 
 async def run(course_url: str):
-    email = os.environ["COURSERA_EMAIL"]
-    password = os.environ["COURSERA_PASSWORD"]
+    email = os.getenv("COURSERA_EMAIL")
+    password = os.getenv("COURSERA_PASSWORD")
+    if not email or not password:
+        logger.error("Missing COURSERA_EMAIL or COURSERA_PASSWORD in environment / .env file")
+        sys.exit(1)
 
     logger.info("Logging into Coursera...")
     playwright, browser, context = await login(email, password, headless=False)
@@ -56,7 +57,7 @@ async def run(course_url: str):
             logger.info(f"  Saved → {path}")
 
             if i < len(readings):
-                time.sleep(DELAY_BETWEEN_LESSONS)
+                await asyncio.sleep(DELAY_BETWEEN_LESSONS)
 
     finally:
         await browser.close()
